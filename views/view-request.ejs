@@ -1,0 +1,16 @@
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+
+<body>
+    <%- include('./partials/nav.ejs') %>
+    <ul>
+        <li><a href="/view-requests">View My Employee Info</a></li>
+    </ul>
+    
+    <h3><%= first_name + " " + last_name %> </h3>
+    <p>Start date: <%= start_date %></p>
+    <p>Employee email: <%= emp_email %></p>
+
+    <%- include('./partials/footer.ejs') %>
+</body>
+</html>
