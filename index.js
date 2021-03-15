@@ -13,9 +13,9 @@ express()
   .use(express.urlencoded({ extended: true }))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('home'))
-  .get('/dashboard', (req, res) => res.render('dashboard'))
-  .get('/requests', (req, res) => res.render('requests'))
+  .get('/', (req, res) => res.render('home', { title: "Home"}))
+  .get('/dashboard', (req, res) => res.render('dashboard', { title: "Dashboard"}))
+  .get('/requests', (req, res) => res.render('requests', { title: "Requests"}))
   .get('/view-requests', getRequests)
 //   .post('/result', (req, res) => {
 //       console.log("Received a request for the results page");
@@ -32,7 +32,7 @@ function getRequests(req, res) {
 		} else {
             // var result = { message: "Hi" }
 			// res.status(200).json(result);
-            res.render('view-request', result[0]);
+            res.render('view-request', { result: result[0], title: "Request"});
 		}
     });
     // var result = { message: "Hi" }

@@ -3,12 +3,18 @@
 
 <body>
     <%- include('./partials/nav.ejs') %>
-    <h2>What do you want to do?</h2>
-    <ul>
-        <li><a href="/">Login/Logout</a></li>
-        <li><a href="/requests">Go to my account</a></li>
-    </ul>
 
+    <div class="content-container">
+        <div class="dashboard">
+            <h2>Welcome back!</h2>
+            <h4>What do you want to do?</h4>
+            <ul>
+                <a href="/"><li>Submit a login/logout request</li></a>
+                <a href="/"><li>View my requests</li></a>
+                <a href="/requests"><li>Go to my account</li></a>
+            </ul>
+        </div>
+    </div>
 
     <!-- Footer -->
     <%- include('./partials/footer.ejs') %>
