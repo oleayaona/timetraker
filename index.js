@@ -25,25 +25,25 @@ express()
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
 function getRequests(req, res) {
-    console.log("Getting requests...")
-    query((err, result) => {
+    console.log("Received request for account info")
+    var sql = "SELECT * FROM employee";
+    queryDB(sql, (err, result) => {
         if (err || result == null || result.length != 1) {
 			res.status(500).json({success: false, data: err});
 		} else {
             // var result = { message: "Hi" }
 			// res.status(200).json(result);
-            res.render('view-request', { result: result[0], title: "Request"});
+            // res.render('view-request', result[0]);
+            res.send(result[0]);
 		}
     });
-    // var result = { message: "Hi" }
 }
 
-function query(callback) {
-    var sql = "SELECT * FROM employee";
+function queryDB(sql, callback) {
     pool.query(sql, (err, res) => {
         if (err) { 
             console.log("Error in query: ", err);
-            callback(err, null)
+            callback(err, null);
         }
         console.log("Result: ");
         console.log(JSON.stringify(res.rows));
