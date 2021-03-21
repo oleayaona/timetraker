@@ -29,15 +29,28 @@ CREATE TABLE public.user
     employee_id INT NOT NULL REFERENCES public.employee(id)
 );
 
+-- CREATE TABLE request
+-- (
+--     id SERIAL NOT NULL PRIMARY KEY,
+--     date_created DATE NOT NULL DEFAULT CURRENT_DATE,
+--     req_entry TIMESTAMP NOT NULL DEFAULT NOW (),
+--     req_type VARCHAR(100) NOT NULL,
+--     is_pending BOOLEAN NOT NULL DEFAULT true,
+--     employee_id INT NOT NULL REFERENCES public.employee(id)
+-- );
+
 CREATE TABLE request
 (
     id SERIAL NOT NULL PRIMARY KEY,
     date_created DATE NOT NULL DEFAULT CURRENT_DATE,
-    req_entry TIMESTAMP NOT NULL DEFAULT NOW (),
-    req_type VARCHAR(100) NOT NULL,
+    req_date DATE NOT NULL,
+    req_time_entry TIME NOT NULL,
+    req_time_type CHAR(2) NOT NULL,
+    req_type VARCHAR(45) NOT NULL,
     is_pending BOOLEAN NOT NULL DEFAULT true,
     employee_id INT NOT NULL REFERENCES public.employee(id)
 );
+
 
 
 -- INSERTS ----
@@ -67,18 +80,15 @@ VALUES (
 );
 
 INSERT INTO request (
-	id,
-	first_name,
-	last_name,
-	start_date,
-    dept_id,
-    emp_email
-)
-VALUES (
-	000001,
-	'John',
-	'Doe',
-	'2015-01-01',
-    1,
-    'johnDoe@workmail.com'
-);
+    req_date,
+    req_time_entry,
+    req_time_type,
+    req_type,
+    employee_id
+)  VALUES (
+    '2022-03-25',
+    '09:30:00',
+    'AM',
+    'login',
+    1
+) RETURNING id;

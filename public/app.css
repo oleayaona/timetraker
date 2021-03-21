@@ -12,6 +12,16 @@ h1, h2, h3, h4, h5, p {
     background-color: #fafafa;
     padding: 20px 50px;
 }
+input {
+    border-radius: 5px;
+    border: 1px solid rgb(87, 87, 87);
+}
+.center-align {
+    text-align: center;
+}
+.flex {
+    display: flex;
+}
 /*---- HEADER NAV ----*/
 nav {
     display: flex;
@@ -37,13 +47,11 @@ nav {
     margin: 100px auto;
     text-align: center;
 }
-input {
+.login-form input {
     display: block;
     width: 80%;
-    border-radius: 5px;
     margin: 10px auto;
     padding: 10px;
-    border: 1px solid rgb(87, 87, 87);
 }
 /*----- DASHBOARD -----*/
 .dashboard ul {
@@ -61,8 +69,56 @@ input {
     text-align: center;
     color: white;
 }
+.dashboard li:hover {
+    background-color: #7437be;
+}
 
-/*------- FOOTER ----*/
+/*------ Request form -----*/
+.request-form {
+    width: 30%;
+    margin: auto;
+    border: 1px solid black;
+    padding: 20px 40px;
+    background-color: white;
+}
+.request-form input {
+    padding: 10px;
+    margin: 5px 0px;
+    font-family: 'Open Sans', sans-serif;
+}
+.request-form .date-input input,  .request-form select{
+    width: 100%;
+}
+.request-form .time-input input[type="text"] {
+    width: 60px;
+    font-size: 1.1em;
+}
+.request-form .time-input input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 15px 3px 0 10px;
+}
+.request-form .time-input label {
+    margin: 13px 0px;
+}
+.request-form .time-input p {
+    font-size: 2em;
+    margin: 0px 5px;
+}
+.request-form select {
+    border-radius: 5px;
+    border: 1px solid rgb(87, 87, 87);
+    padding: 10px;
+}
+.request-form input[type="submit"] {
+    background-color: #562b8b;
+    padding: 15px 25px;
+    color: white;
+    margin: 20px auto;
+    cursor: pointer;
+}
+
+/*------- FOOTER --__--*/
 footer {
     text-align: center;
     padding: 20px 0;
@@ -71,7 +127,7 @@ footer {
 }
 
 @media only screen and (min-width: 37.5em){
-    input {
+    .login-form input {
         width: 60%;
     }
 }

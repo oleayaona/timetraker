@@ -1,0 +1,41 @@
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+
+<body>
+    <!-- Nav -->
+    <%- include('./partials/nav.ejs') %>
+    <!-- End of nav -->
+
+    <div class="content-container">
+        <ul>
+            <li><a id="emp-info-btn" href="#">View My Employee Info</a></li>
+        </ul>
+    
+        <div class="employee-info"></div>
+    </div>
+
+     <!-- Footer -->
+    <%- include('./partials/footer.ejs') %>
+    <!-- End of footer -->
+    <script>
+        const btn = document.querySelector("#emp-info-btn");
+        let container = document.querySelector(".employee-info");
+        btn.onclick = () => {
+            container.innerHTML = "<p>Loading...</p>"
+            event.preventDefault();
+            fetch('/get-account-info')
+                .then((response) => response.json())
+                .then(result => {
+                    console.log("Got results!", result);
+                    container.innerHTML = `
+                    <h3>${result.first_name} ${result.last_name}</h3>
+                    <p>${result.start_date} </p>
+                    <p>${result.emp_email} %></p>
+                    `;
+                }).catch((err) => {
+                    console.log("Error fetching data: ", err);
+                });
+        };
+    </script>
+</body>
+</html>

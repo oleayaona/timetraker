@@ -11,43 +11,115 @@ const pool = new Pool({connectionString: connectionString, ssl: true});
 express()
   .use(express.static(path.join(__dirname, 'public')))
   .use(express.urlencoded({ extended: true }))
+  // Get views
   .set('views', path.join(__dirname, 'views'))
+  // Set view engine
   .set('view engine', 'ejs')
+  // Home
   .get('/', (req, res) => res.render('home', { title: "Home"}))
+  // Get dashboard view
   .get('/dashboard', (req, res) => res.render('dashboard', { title: "Dashboard"}))
-  .get('/requests', (req, res) => res.render('requests', { title: "Requests"}))
-  .get('/view-requests', getRequests)
-//   .post('/result', (req, res) => {
-//       console.log("Received a request for the results page");
-//       var param = {rate : calculateRate(req.body.weight, req.body.type)};
-//       res.render('result', param)
+  // Get make Requests view
+  .get('/make-request', (req, res) => res.render('make-request', { title: "Make A Request"}))
+  // Get account view
+  .get('/account', (req, res) => res.render('account', { title: "My Account"}))
+  // Get account info
+  .get('/get-account-info', getAccountInfo)
+  // Get requests view
+  .get('/view-requests', (req, res) => res.render('view-requests', { title: "Requests"}))
+  // Get requests view
+  .get('/get-requests', getRequests)
+  // Submit request
+  .post('/submit-request', submitRequest)
+//   .post('/submit-request', (req, res) => {
+//     console.log("Submitting request...");
+//     var param = {rate : calculateRate(req.body.weight, req.body.type)};
+//     res.render('result', param)
 //   })
+  // Handle 404
+  .use(function(req, res) {
+    res.status(400);
+    res.render('404', {title: '404: File Not Found'});
+  })
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
-function getRequests(req, res) {
+
+// GET
+// Gets account info from db
+function getAccountInfo(req, res) {
     console.log("Received request for account info")
     var sql = "SELECT * FROM employee";
     queryDB(sql, (err, result) => {
         if (err || result == null || result.length != 1) {
 			res.status(500).json({success: false, data: err});
 		} else {
-            // var result = { message: "Hi" }
-			// res.status(200).json(result);
             // res.render('view-request', result[0]);
             res.send(result[0]);
 		}
     });
 }
 
+// GET
+// Gets all requests from db
+function getRequests(req, res) {
+    console.log("Received request for all requests")
+    var sql = "SELECT * FROM request";
+    queryDB(sql, (err, result) => {
+        if (err || result == null || result.length == 0) {
+            console.log("Query error!");
+			res.status(500).json({success: false, data: err});
+		} else {
+            res.json(result);
+		}
+    });
+}
+
+// POST
+// Submits a request to db
+function submitRequest(req, res) {
+    // With hardcoded employee ID for now
+    var sql = `
+        INSERT INTO request (
+            req_date,
+            req_time_entry,
+            req_time_type,
+            req_type,
+            employee_id
+        )  VALUES (
+            '${req.body.date}',
+            '${req.body.hour}:${req.body.min}:00',
+            '${req.body.time}',
+            '${req.body.type}',
+            1
+        ) RETURNING id`;
+    console.log("Now executing SQL: " + sql);
+    queryDB(sql, (err, result) => {
+        if (err || result == null || result.length != 1) {
+            console.log("Error submitting request to db", err)
+			res.status(500).json({success: false, data: err});
+		} else {
+            console.log("Successfully submitted request");
+            var param = {result: result, title: "Success! Request submitted"};
+            res.render('success', param);
+            // res.send(result);
+		}
+    });
+}
+
+
+
+
+
 function queryDB(sql, callback) {
     pool.query(sql, (err, res) => {
         if (err) { 
             console.log("Error in query: ", err);
             callback(err, null);
+        } else {
+            console.log("Query result: ");
+            console.log(JSON.stringify(res.rows));
+            callback(null, res.rows);
         }
-        console.log("Result: ");
-        console.log(JSON.stringify(res.rows));
-        callback(null, res.rows);
     });
     
 }

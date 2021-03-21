@@ -1,0 +1,93 @@
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+
+<body>
+    <!-- Nav -->
+    <%- include('./partials/nav.ejs') %>
+    <!-- End of nav -->
+
+    <div class="content-container">
+        <h2>Note:</h2>
+        <p>Please fill out the form carefully.</p>
+
+        <form action="/submit-request" class="request-form" method="POST">
+            <h3 class="center-align">Attendance Validation Request</h3>
+            <div class="date-input">
+                <p>Date</p>
+                <input type="date" name="date" id="date" placeholder="Date" required>
+            </div>
+            <p>Time</p>
+            <div class="time-input flex">
+                <input type="text" name="hour" id="hour" oninput="numberOnly('hour')" onblur="formatTime('hour')" placeholder="00" maxlength="2"  min="0" max="12"required>
+                <p>:</p>
+                <input type="text" name="min" id="min" oninput="numberOnly('min')" onblur="formatTime('min')" placeholder="00" maxlength="2"  min="0" max="59" equired>
+                <input type="radio" id="AM" name="time" value="AM" required>
+                <label for="time">AM</label><br>
+                <input type="radio" id="PM" name="time" value="PM">
+                <label for="time">PM</label><br>
+            </div>
+            <p>Request Type</p>
+            <select name="type" id="type" required>
+                <option value="login">Log In</option>
+                <option value="logout">Log Out</option>
+            </select>
+            
+            <input type="submit" name="submit" id="submit-req-btn" value="SUBMIT REQUEST">
+        </form>
+        <!-- End of request form -->
+    </div>
+    <!-- End of content container -->
+
+    <!-- Footer -->
+    <%- include('./partials/footer.ejs') %>
+    <!-- End of footer -->
+
+    <script>
+        // Number only input
+        function numberOnly(id){
+            var input = document.getElementById(id).value.replace(/\D/g, '');
+            document.getElementById(id).value = input;
+        }
+
+        // Time 2-digit formmtter
+        function formatTime(id){
+            var input = document.getElementById(id);
+            if (input.value.length <= 1) {
+                input.value = `0${input.value}`;
+            }
+        }
+
+
+        // const form = document.querySelector(".request-form");
+        // const btn = document.querySelector("#submit-req-btn");
+        // btn.onclick = () => {
+        //     /orm.innerHTML = "<p>Submitting request...</p>";
+        //     form.submit() = (response) => {
+        //         try {
+        //             response.json();
+        //             if (result.id) {
+        //                 console.log("Request with ID # " + result.id + "submitted!");
+        //                 form.innerHTML = `<h3>Request submitted.</h3>`;
+        //             }
+        //         } catch (err) {
+        //             console.log("Error: ", err)
+        //         }
+                
+        //     }
+            
+            // fetch('/submit-request')
+            //     .then((response) => response.json())
+            //     .then(result => {
+            //         if (result.id) {
+            //             console.log("Request with ID # " + result.id + "submitted!");
+            //             form.innerHTML = `
+            //             <h3>Request submitted.</h3>
+            //             `;
+            //             }
+            //     }).catch((err) => {
+            //         console.log("Error fetching data: ", err);
+            //     });
+        // };
+    </script>
+</body>
+</html>
