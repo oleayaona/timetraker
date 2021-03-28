@@ -5,6 +5,8 @@ const sanitizer = require('sanitize')();
 // Password hasher
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+// Session module
+const session = require('express-session');
 
 const PORT = process.env.PORT || 8000
 
@@ -18,12 +20,32 @@ express()
   .use(express.static(path.join(__dirname, 'public')))
   .use(express.urlencoded({ extended: true }))
   .use(express.json())
+  .use(session({
+    name: 'server-session-cookie-id',
+    secret: 'my express secret',
+    saveUninitialized: true,
+    resave: true
+  }))
   // Get views
   .set('views', path.join(__dirname, 'views'))
   // Set view engine
   .set('view engine', 'ejs')
+  /*-------------*/
+  /*   ROUTES    */
+  /* ------------*/
   // Home
-  .get('/', (req, res) => res.render('home', { title: "Home"}))
+  .get('/', (req, res) => {
+      // If user is not logged in, redirect to home for login
+      if (typeof req.session.userId === 'undefined') {
+        res.render('home', {title: "Home"});
+      } else {
+        // For ejs output
+        res.locals.first_name = req.session.userName;
+        // if logged in, go to dashboard 
+        res.render('dashboard', { title: "Dashboard"})
+      }
+  })
+  
   // Sign up page
   .get('/home/create-account', (req, res) => res.render('create-account', { title: "Create Account"}))
   // Verify employee info
@@ -32,16 +54,27 @@ express()
   .post('/home/create-account/submit', createAccount)
   // Login
   .post('/home/login', verifyLogin)
+  // Logout
+  .get('/account/logout', handleLogout)
   // Get dashboard view
-  .get('/dashboard', (req, res) => res.render('dashboard', { title: "Dashboard"}))
+  .get('/dashboard', (req, res) => {
+      // If user is not logged in, redirect to home
+      if (typeof req.session.userId === 'undefined') {
+        var param = {message: "Please login first", title: "Home | Login"};
+        res.render('home', param);
+      } else {
+        // if logged in, go to dashboard 
+        res.render('dashboard', { title: "Dashboard", userId: req.session.userId})
+      }  
+  })
   // Get make Requests view
-  .get('/make-request', (req, res) => res.render('make-request', { title: "Make A Request"}))
+  .get('/make-request', (req, res) => res.render('make-request', { title: "Make A Request", userId: req.session.userId}))
   // Get account view
-  .get('/account', (req, res) => res.render('account', { title: "My Account"}))
+  .get('/account', (req, res) => res.render('account', { title: "My Account", userId: req.session.userId}))
   // Get account info
   .get('/get-account-info', getAccountInfo)
   // Get requests view
-  .get('/requests', (req, res) => res.render('requests', { title: "Requests"}))
+  .get('/requests', (req, res) => res.render('requests', { title: "Requests", userId: req.session.userId}))
   // Get requests view
   .get('/get-requests', getRequests)
   // Submit request
@@ -125,44 +158,62 @@ function submitRequest(req, res) {
 function verifyLogin(req, res) {
     var email = sanitizer.value(req.body.email, 'email');
     var password = sanitizer.value(req.body.password, /(?=.{8,})(?=.*[a-zA-Z]).*$/);
-    var emailExists = checkEmail(email)
+    checkEmail(email, (err, result) => {
+        if (err || result == null) {
+            var param = {message: "Email doesn't exist. Please try again.", title: "Home | Login"};
+            res.render('home', param);
+        } else {
+            getUserInfo(email, (err, result) => {
+                if (err || result == null) {
+                    var param = {message: "Server error :( Can't login. Please try again later", title: "Home | Login"};
+                    res.render('home', param);
+                } else {
+                    // verify password
+                    console.log("Now verifying password...");
+                    bcrypt.compare(password, result.password, function(err, hashResult) {
+                        if (err || hashResult == false) {
+                            var param = {message: "Invalid password. Please try again.", title: "Home | Login"};
+                            res.render('home', param);
+                        } else {
+                            console.log("Password verified!")
+                            req.session.userId = result.id;
+                            req.session.userName = result.first_name
+                            res.render('dashboard', {title: "Dashboard", userName: result.first_name, userId: req.session.userId});
+                        }
+                    });
+                }
+            });
+            
+        }
+    })
+}
 
-    if (!emailExists) {
-        var param = {message: "Invalid email or password. Please try again.", title: "Home | Login"};
-        res.render('home', param);
-    } else {
-        var userData = getUserInfo(email, (err, res) => {
-            if (err) {
-                var param = {message: "Server error :( Can't login. Please try again later", title: "Home | Login"};
-                res.render('home', param);
-            } else {
-                // verify password
-                bcrypt.compare(password, res[0].password, function(err, result) {
-                    if (err) {
-                        var param = {message: "Invalid email or password. Please try again.", title: "Home | Login"};
-                        res.render('home', param);
-                    } else {
-                        res.render('dashboard', {title: "Dashboard"});
-                    }
-                });
-            }
-        });
-        
-    }
 
+// Handle logout
+function handleLogout(req, res) {
+    if (req.session.userId) {
+		req.session.destroy();
+        console.log("Session successfully destroyed.")
+		res.render('home', {title: "Home"});
+	}
 }
 
 // Check if email exists in db
-function checkEmail(email){
-    var sql = `SELECT * FROM employee WHERE emp_email = ${email} RETURNING id`;
+function checkEmail(email, callback){
+    var sql = `
+        SELECT * 
+        FROM public.user
+        WHERE email = '${email}'`;
     console.log("Now executing SQL: " + sql);
     queryDB(sql, (err, result) => {
         if (err || result == null || result.length == 0) {
             // no matching email- unsuccessful
-			return false;
+            console.log("Error: Couldn't check email", err)
+			callback(err, null)
 		} else {
+            console.log("Email has a user account");
             // success
-            return true;
+            callback(null, result)
 		}
     });
 }
@@ -171,15 +222,21 @@ function checkEmail(email){
 // Gets user info from db
 function getUserInfo(email, callback) {
     console.log("Retrieving user info for login verification...")
-    var sql = `SELECT * FROM public.user WHERE email = '${email}'`;
+    var sql = `
+        SELECT * 
+        FROM public.user AS u
+            JOIN employee AS e
+                ON u.employee_id = e.id
+        WHERE u.email = '${email}'`;
+    console.log("Now executing SQL: " + sql);
     queryDB(sql, (err, result) => {
-        if (err || result == null || result.length != 1) {
+        if (err || result.length == 0) {
 			console.log("Error getting user info: ", err);
-            callback(err, null); 
+            callback(err, null);
 		} else {
-            console.log("User info query result: ");
-            console.log(JSON.stringify(res.rows));
-            callback(null, res.rows);
+            console.log("Successfully retrieved user info!");
+            console.log(result)
+            callback(null, result[0]);
 		}
     });
 }
@@ -211,44 +268,44 @@ function verifyEmployee(req, res) {
 
 // Create account in db
 function createAccount(req, res) {
-    // Check password agains regex
-    var password = sanitizer.value(req.body.password, /(?=.{8,})(?=.*[a-zA-Z]).*$/)
-    var hashed = '';
+    // Check password against regex
+    var password = sanitizer.value(req.body.password, /(?=.{8,})/)
     bcrypt.hash(password, saltRounds, function(err, hash) {
         if (err) {
             console.log("Error while hashing", err)
         } else {
-            hashed = hash;
+            var sql = `
+                INSERT INTO public.user (
+                    email,
+                    password,
+                    employee_id
+                )
+                VALUES (
+                    '${req.body.emp_email}',
+                    '${hash}',
+                    '1'
+                )
+                RETURNING id`;
+            console.log("Now executing SQL: " + sql);
+            queryDB(sql, (err, result) => {
+                if (err || result == null || result.length == 0) {
+                    var param = {message: "Couldn't create account :( Please try again.", title: "Home | Create Account"};
+                    res.render('home', param);
+                } else {
+                    console.log("Successfully created account!");
+                    console.log("Now adding user_id to employee...");
+                    console.log(result);
+                    // update employee info with user_id
+                    addUserId(result, req.body.id, (err, result) => {
+                        console.log("Returned from db successful update.");
+                        res.render('dashboard', {title: "Dashboard"});
+                    })
+                }
+            });
+
         }
     });
-    var sql = `
-        INSERT INTO public.user (
-            email,
-            password,
-            employee_id
-        )
-        VALUES (
-            'email.com',
-            'passwordhashed',
-            '3555'
-        )
-        RETURNING id`;
-    console.log("Now executing SQL: " + sql);
-    queryDB(sql, (err, result) => {
-        if (err || result == null || result.length == 0) {
-            console.log("Error creating account", err)
-			res.status(500).json({success: false, data: err});
-		} else {
-            console.log("Successfully created account!");
-            console.log("Now adding user_id to employee...");
-            console.log(result);
-            // update employee info with user_id
-            addUserId(result, req.body.id, (err, result) => {
-                console.log("Returned from db successful update.");
-                res.render('dashboard', {title: "Dashboard"});
-            })
-		}
-    });
+    
 }
 
 

@@ -36,6 +36,9 @@ nav {
 .nav-list li {
     padding: 5px 10px;
 }
+.nav-list li a {
+    color: #562b8b;
+}
 .logo h1 {
     font-family: 'Francois One', sans-serif;
     font-size: 3em;

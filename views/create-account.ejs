@@ -10,7 +10,7 @@
             <h1>Create Account</h1>
             <p>Please provide your company email and ID.</p>
             <input type="emp_email" name="emp_email" id="emp_email" placeholder="Work Email" required>
-            <input type="id" name="id" id="id" placeholder="Employee ID" pattern="/(?=.{8,})(?=.*[a-zA-Z]).*$/" required>
+            <input type="id" name="id" id="id" placeholder="Employee ID" required>
             <div id="password_field"></div>
             <p id ="note"></p>
             <input type="button" value="Verify" id="verify-btn" onclick="verify()">
@@ -59,7 +59,7 @@
                         btn.style.visibility = "hidden";
                         document.querySelector("#note").style.visibility = "hidden";
                     } else {
-                        note.innerHTML = "Email already has an account. Please try again.";
+                        note.innerHTML = "Email already has an account. Please login instead.";
                         note.style.color = "red";
                     }
                 

@@ -7,5 +7,9 @@
         <li><a href="/dashboard">Dashboard</a></li>
         <li><a href="/requests">Requests</a></li>
         <li><a href="/account">Account</a></li>
+        
+        <% if (locals.userId) { %>
+            <li><a href="/account/logout">Logout</a></li>
+        <% } %>
     </ul>
 </nav>
