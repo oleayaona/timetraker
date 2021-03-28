@@ -8,14 +8,19 @@
     <div class="content-container">
         <a href="/dashboard"><h2>Go to my Dashboard > </h2></a>
 
-        <form action="/" class="login-form" method="POST">
+        <form action="/home/login" class="login-form" method="POST">
+            <% if (locals.message) { %>
+                <p>
+                    <%- locals.message %>
+                </p>
+            <% } %>
             <h1>Log In</h1>
             <input type="email" name="email" id="email" placeholder="Email" required>
             <input type="password" name="password" id="password" placeholder="Password" required>
             <input type="submit" name="submit" value="LOGIN">
             <hr>
             <p>No account yet?</p>
-            <a href="/">CREATE ACCOUNT</a>
+            <a href="/home/create-account">CREATE ACCOUNT</a>
         </form>
     </div>
 

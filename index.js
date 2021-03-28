@@ -1,5 +1,11 @@
 const express = require('express')
 const path = require('path')
+// For form sanitation
+const sanitizer = require('sanitize')();
+// Password hasher
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const PORT = process.env.PORT || 8000
 
 // DB vars
@@ -11,12 +17,21 @@ const pool = new Pool({connectionString: connectionString, ssl: true});
 express()
   .use(express.static(path.join(__dirname, 'public')))
   .use(express.urlencoded({ extended: true }))
+  .use(express.json())
   // Get views
   .set('views', path.join(__dirname, 'views'))
   // Set view engine
   .set('view engine', 'ejs')
   // Home
   .get('/', (req, res) => res.render('home', { title: "Home"}))
+  // Sign up page
+  .get('/home/create-account', (req, res) => res.render('create-account', { title: "Create Account"}))
+  // Verify employee info
+  .post('/home/create-account/verify', verifyEmployee)
+  // Verify employee info
+  .post('/home/create-account/submit', createAccount)
+  // Login
+  .post('/home/login', verifyLogin)
   // Get dashboard view
   .get('/dashboard', (req, res) => res.render('dashboard', { title: "Dashboard"}))
   // Get make Requests view
@@ -26,7 +41,7 @@ express()
   // Get account info
   .get('/get-account-info', getAccountInfo)
   // Get requests view
-  .get('/view-requests', (req, res) => res.render('view-requests', { title: "Requests"}))
+  .get('/requests', (req, res) => res.render('requests', { title: "Requests"}))
   // Get requests view
   .get('/get-requests', getRequests)
   // Submit request
@@ -106,10 +121,158 @@ function submitRequest(req, res) {
     });
 }
 
+// Verify login
+function verifyLogin(req, res) {
+    var email = sanitizer.value(req.body.email, 'email');
+    var password = sanitizer.value(req.body.password, /(?=.{8,})(?=.*[a-zA-Z]).*$/);
+    var emailExists = checkEmail(email)
+
+    if (!emailExists) {
+        var param = {message: "Invalid email or password. Please try again.", title: "Home | Login"};
+        res.render('home', param);
+    } else {
+        var userData = getUserInfo(email, (err, res) => {
+            if (err) {
+                var param = {message: "Server error :( Can't login. Please try again later", title: "Home | Login"};
+                res.render('home', param);
+            } else {
+                // verify password
+                bcrypt.compare(password, res[0].password, function(err, result) {
+                    if (err) {
+                        var param = {message: "Invalid email or password. Please try again.", title: "Home | Login"};
+                        res.render('home', param);
+                    } else {
+                        res.render('dashboard', {title: "Dashboard"});
+                    }
+                });
+            }
+        });
+        
+    }
+
+}
+
+// Check if email exists in db
+function checkEmail(email){
+    var sql = `SELECT * FROM employee WHERE emp_email = ${email} RETURNING id`;
+    console.log("Now executing SQL: " + sql);
+    queryDB(sql, (err, result) => {
+        if (err || result == null || result.length == 0) {
+            // no matching email- unsuccessful
+			return false;
+		} else {
+            // success
+            return true;
+		}
+    });
+}
+
+// GET
+// Gets user info from db
+function getUserInfo(email, callback) {
+    console.log("Retrieving user info for login verification...")
+    var sql = `SELECT * FROM public.user WHERE email = '${email}'`;
+    queryDB(sql, (err, result) => {
+        if (err || result == null || result.length != 1) {
+			console.log("Error getting user info: ", err);
+            callback(err, null); 
+		} else {
+            console.log("User info query result: ");
+            console.log(JSON.stringify(res.rows));
+            callback(null, res.rows);
+		}
+    });
+}
 
 
+// POST
+// Verify if employee email and ID are in db
+function verifyEmployee(req, res) {
+    console.log("Verifying employee...")
+    // Sanitize
+    var emp_email = sanitizer.value(req.body.emp_email, 'email');
+    var id = sanitizer.value(req.body.id, 'int');
+    var sql = `
+        SELECT * 
+        FROM employee
+        WHERE emp_email = '${emp_email}' AND id = ${id}`;
+    console.log("Now executing SQL: " + sql);
+    queryDB(sql, (err, result) => {
+        if (err || result == null) {
+            console.log("Error verifying employee info in db", err)
+			res.status(500).json({success: false, data: err});
+		} else {
+            console.log("Email and ID verified!");
+            console.log(result);
+            res.send(result);
+		}
+    });
+}
+
+// Create account in db
+function createAccount(req, res) {
+    // Check password agains regex
+    var password = sanitizer.value(req.body.password, /(?=.{8,})(?=.*[a-zA-Z]).*$/)
+    var hashed = '';
+    bcrypt.hash(password, saltRounds, function(err, hash) {
+        if (err) {
+            console.log("Error while hashing", err)
+        } else {
+            hashed = hash;
+        }
+    });
+    var sql = `
+        INSERT INTO public.user (
+            email,
+            password,
+            employee_id
+        )
+        VALUES (
+            'email.com',
+            'passwordhashed',
+            '3555'
+        )
+        RETURNING id`;
+    console.log("Now executing SQL: " + sql);
+    queryDB(sql, (err, result) => {
+        if (err || result == null || result.length == 0) {
+            console.log("Error creating account", err)
+			res.status(500).json({success: false, data: err});
+		} else {
+            console.log("Successfully created account!");
+            console.log("Now adding user_id to employee...");
+            console.log(result);
+            // update employee info with user_id
+            addUserId(result, req.body.id, (err, result) => {
+                console.log("Returned from db successful update.");
+                res.render('dashboard', {title: "Dashboard"});
+            })
+		}
+    });
+}
 
 
+// POST
+// Update employee info with user account ID
+function addUserId(result, emp_id, callback) {
+    var sql = `
+        UPDATE employee
+        SET user_id = ${result[0].id}
+        WHERE id = ${emp_id}`;
+    console.log("Now executing SQL: " + sql);
+    queryDB(sql, (err, res) => {
+        if (err) {
+            console.log("Error adding user_id", err)
+            res.status(500).json({success: false, data: err});
+        } else {
+            console.log("Successfully added user_id");
+            callback(null, res.rows);
+        }
+    })
+}
+
+
+// Handles db queries
 function queryDB(sql, callback) {
     pool.query(sql, (err, res) => {
         if (err) { 

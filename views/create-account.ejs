@@ -1,0 +1,77 @@
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+
+<body>
+    <!-- Nav -->
+    <%- include('./partials/nav.ejs') %>
+
+    <div class="content-container">
+        <form action="/home/create-account/submit" class="login-form" method="POST">
+            <h1>Create Account</h1>
+            <p>Please provide your company email and ID.</p>
+            <input type="emp_email" name="emp_email" id="emp_email" placeholder="Work Email" required>
+            <input type="id" name="id" id="id" placeholder="Employee ID" pattern="/(?=.{8,})(?=.*[a-zA-Z]).*$/" required>
+            <div id="password_field"></div>
+            <p id ="note"></p>
+            <input type="button" value="Verify" id="verify-btn" onclick="verify()">
+        </form>
+    </div>
+
+
+    <!-- Footer -->
+    <%- include('./partials/footer.ejs') %>
+
+    <script>
+        function verify() {
+            const btn = document.querySelector("#verify-btn");
+            const emailInput = document.querySelector("#emp_email");
+            const idInput = document.querySelector("#id");
+            const note = document.querySelector("#note");
+            // if fields are not empty
+            if (emailInput.value !== '' && idInput.value !== '') {
+                btn.value = "Verifying email and ID...";
+                fetch('/home/create-account/verify', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+
+                // pass POST params
+                body: JSON.stringify({
+                    emp_email: emailInput.value,
+                    id: idInput.value,
+                })
+                })
+                .then((response) => {
+                    if(!response.ok) throw new Error(response.status);
+                    else return response.json();
+                })
+                .then(result => {
+                    console.log(result);
+                    if (result[0].user_id == null) {
+                        const passwordField = document.querySelector("#password_field");
+                        passwordField.innerHTML = `
+                            <p>Please enter a password</p>
+                            <input type="password" name="password" id="password" placeholder="Password" required>
+                            <input type="submit" name="submit" id="create-account-btn" value="CREATE ACCOUNT">
+                        `;
+                        btn.style.visibility = "hidden";
+                        document.querySelector("#note").style.visibility = "hidden";
+                    } else {
+                        note.innerHTML = "Email already has an account. Please try again.";
+                        note.style.color = "red";
+                    }
+                
+                }).catch((err) => {
+                    console.log("Error! Verification response not valid ", err);
+                });
+            } else {
+                note.innerHTML = "Please fill in all the fields";
+                note.style.color = "red";
+            };
+            }
+            
+    </script>
+</body>
+</html>
