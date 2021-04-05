@@ -6,10 +6,9 @@
     <%- include('./partials/nav.ejs') %>
 
     <div class="content-container">
-        <h2>Note:</h2>
-        <p>Please fill out the form carefully.</p>
+        <h2><a href="/dashboard">&#8592; Back to Dashboard</a></h2>
         <form class="request-form">
-            <h2>Request submitted.</h2>
+            <h2><%- locals.message %></h2>
         </form>
     </div>
 

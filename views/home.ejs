@@ -9,12 +9,12 @@
         <!-- <a href="/dashboard"><h2>Go to my Dashboard > </h2></a> -->
 
         <form action="/home/login" class="login-form" method="POST">
+            <h1>Log In</h1>
             <% if (locals.message) { %>
-                <p>
+                <p class="message">
                     <%- locals.message %>
                 </p>
             <% } %>
-            <h1>Log In</h1>
             <input type="email" name="email" id="email" placeholder="Email" required>
             <input type="password" name="password" id="password" placeholder="Password" required>
             <input type="submit" name="submit" value="LOGIN">
@@ -27,5 +27,27 @@
 
     <!-- Footer -->
     <%- include('./partials/footer.ejs') %>
+    <script>
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1;
+        var yyyy = today.getFullYear();
+
+        if(dd<10) {
+            dd = '0'+dd
+        } 
+        if(mm<10) {
+            mm = '0'+mm
+        } 
+        today = mm + '/' + dd + '/' + yyyy;
+        var day = getDayName(today, "en-US"); 
+        const dateDisplay = document.querySelector('#today');
+        dateDisplay.innerHTML = `<h3>${day}, ${today}</h3>`;
+
+        function getDayName(dateStr, locale) {
+            var date = new Date(dateStr);
+            return date.toLocaleDateString(locale, { weekday: 'long' });        
+        }
+    </script>
 </body>
 </html>

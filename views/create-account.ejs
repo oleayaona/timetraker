@@ -7,10 +7,15 @@
 
     <div class="content-container">
         <form action="/home/create-account/submit" class="login-form" method="POST">
+            <% if (locals.message) { %>
+                <p class="message">
+                    <%- locals.message %>
+                </p>
+            <% } %>
             <h1>Create Account</h1>
             <p>Please provide your company email and ID.</p>
-            <input type="emp_email" name="emp_email" id="emp_email" placeholder="Work Email" required>
-            <input type="id" name="id" id="id" placeholder="Employee ID" required>
+            <input type="email" name="emp_email" id="emp_email" placeholder="Work Email" required>
+            <input type="text" name="id" id="id" oninput="numberOnly('id')" placeholder="Employee ID" required>
             <div id="password_field"></div>
             <p id ="note"></p>
             <input type="button" value="Verify" id="verify-btn" onclick="verify()">
@@ -49,28 +54,72 @@
                 })
                 .then(result => {
                     console.log(result);
-                    if (result[0].user_id == null) {
-                        const passwordField = document.querySelector("#password_field");
-                        passwordField.innerHTML = `
-                            <p>Please enter a password</p>
-                            <input type="password" name="password" id="password" placeholder="Password" required>
-                            <input type="submit" name="submit" id="create-account-btn" value="CREATE ACCOUNT">
-                        `;
-                        btn.style.visibility = "hidden";
-                        document.querySelector("#note").style.visibility = "hidden";
+                    // If verification was successful
+                    if (result.success) {
+                        // If email does not have a user ID already
+                        if (result.data[0].user_id == null) {
+                            const passwordField = document.querySelector("#password_field");
+                            passwordField.innerHTML = `
+                                <p>Please enter a password</p>
+                                <input type="password" name="password" id="password" placeholder="Password" required>
+                                <input type="hidden" name="first_name" id="first_name" value="${result.data[0].first_name}"> 
+                                <input type="submit" name="submit" id="create-account-btn" value="CREATE ACCOUNT">
+                            `;
+                            // Hide VERIFY button
+                            btn.style.visibility = "hidden";
+                            document.querySelector("#note").style.visibility = "hidden";
+                            // Make inputs not editable
+                            emailInput.setAttribute("readonly", true);
+                            idInput.setAttribute("readonly", true);
+                        } else {
+                            note.innerHTML = '';
+                            note.innerHTML = "Email already has an account. Please <a href='/' style='text-decoration: underline;'>login</a> instead.";
+                            note.style.color = "red";
+                            btn.value = "Verify";
+                        }
                     } else {
-                        note.innerHTML = "Email already has an account. Please login instead.";
-                        note.style.color = "red";
+                        note.innerHTML = "Invalid email or ID. Please check your credentials and try again.";
+                        btn.value = "Verify";
                     }
+                    
                 
                 }).catch((err) => {
                     console.log("Error! Verification response not valid ", err);
+                    note.innerHTML = "Server error :( Please try again later.";
+                    btn.value = "Verify";
                 });
             } else {
                 note.innerHTML = "Please fill in all the fields";
-                note.style.color = "red";
             };
-            }
+        }
+
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1;
+        var yyyy = today.getFullYear();
+
+        if(dd<10) {
+            dd = '0'+dd
+        } 
+        if(mm<10) {
+            mm = '0'+mm
+        } 
+        today = mm + '/' + dd + '/' + yyyy;
+        var day = getDayName(today, "en-US"); 
+        const dateDisplay = document.querySelector('#today');
+        dateDisplay.innerHTML = `<h3>${day}, ${today}</h3>`;
+
+        function getDayName(dateStr, locale) {
+            var date = new Date(dateStr);
+            return date.toLocaleDateString(locale, { weekday: 'long' });        
+        }
+
+        // Number only input
+        function numberOnly(id){
+            var input = document.getElementById(id).value.replace(/\D/g, '');
+            document.getElementById(id).value = input;
+        }
+
             
     </script>
 </body>

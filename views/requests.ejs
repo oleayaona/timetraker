@@ -9,13 +9,15 @@
     <div class="content-container">
         <h2><a href="/dashboard">&#8592; Back to Dashboard</a></h2>
         
-        <ul>
-            <li><a class="get-requests-btn" href="/get-requests">View All Requests</a></li>
+        <ul class="no-list-style">
+            <a>
+                <li class="list-panel">
+                    <a class="get-requests-btn" href="/get-requests"><p>View All Requests</p></a>
+                    <ul class="requests"></ul>
+                </li>
+            </a>
         </ul>
         
-        <ul class="requests">
-
-        </ul>
     
     </div>
     <!-- End of main content -->
@@ -25,34 +27,88 @@
     <!-- End of footer -->
 
     <script>
+
         const btn = document.querySelector(".get-requests-btn");
         let container = document.querySelector(".requests");
+        let isVisible = false;
+        let gotResults = false;
         btn.onclick = () => {
             event.preventDefault();
-            container.innerHTML = "<p>Loading requests...</p>"
-            fetch('/get-requests')
+            // If requests are visible, hide when button is clicked
+            if (isVisible) {
+                toggleHide(".requests");
+                isVisible = false;
+            } else if (gotResults && !isVisible) {
+                // When requests are not visible but present, show requests
+                toggleHide(".requests");
+                isVisible = true;
+            } else {
+                container.innerHTML = "<p>Loading requests...</p>"
+                let userId = '<%-locals.userId %>'
+                fetch(`/get-requests/${userId}`)
+                    .then((response) => response.json())
+                    .then(result => {
+                        // If no results
+                        if (result.length == 0) {
+                            container.innerHTML = "<p>No requests to display.</p>"
+                        } else {
+                            container.innerHTML = ""
+                            for(var i = 0; i < result.length; i++) {
+                                var request = document.createElement('li');
+                                // Add data attribute to identify each li
+                                request.setAttribute("id", result[i].id);
+                                // Insert HTML
+                                request.innerHTML = `
+                                <h3>${result[i].req_type.toUpperCase()}</h3>
+                                <h5>Request for: ${result[i].req_date.substring(0, 10)}</h5>
+                                <p>Log entry: ${result[i].req_time_entry.substring(0, 5)} ${result[i].req_time_type}</p>
+                                `;
+                                if (result[i].is_pending) {
+                                    request.innerHTML += `<p>Pending: YES</p>`;
+                                    request.innerHTML += `<button onclick="deleteReq(${result[i].id})" class="delete-req-btn">Delete</button>`;
+                                } else {
+                                    request.innerHTML += `<p>Pending: NO</p>`;
+                                }
+                                container.appendChild(request);
+                                
+                            };
+                            // Set list visibility to true
+                            isVisible = true;
+                            // Indicate that requests from db have been retrieved
+                            gotResults = true;
+                        
+                    }
+                        
+                    }).catch((err) => {
+                        console.log("Error fetching data: ", err);
+                    });
+            }
+        };
+
+
+        function toggleHide(id) {
+            var element = document.querySelector(id);
+            element.classList.toggle("hidden");
+        }
+
+
+        function deleteReq(id) {
+            console.log("Deleting request with ID: " + id)
+            fetch(`/delete-request/${id}`, {
+                    method: 'DELETE'
+                })
                 .then((response) => response.json())
                 .then(result => {
-                    // console.log(result);
-                    container.innerHTML = ""
-                    for(var i = 0; i < result.length; i++) {
-                        var request = document.createElement('li');
-                        request.innerHTML = `
-                        <h2>${result[i].req_type.toUpperCase()}</h2>
-                        <h3>Request for: ${result[i].req_date}</h3>
-                        <p>Log entry: ${result[i].req_time_entry} ${result[i].req_time_type}</p>
-                        `;
-                        if (result[i].is_pending) {
-                            request.innerHTML += `<p>Pending: YES</p>`;
-                        } else {
-                            request.innerHTML += `<p>Pending: NO</p>`;
-                        }
-                        container.appendChild(request);
-                    };
+                    // If successful, indicate deleted req
+                    let listElement = document.getElementById(id);
+                    listElement.innerHTML = "<h3>Request deleted.</h3>"
                 }).catch((err) => {
-                    console.log("Error fetching data: ", err);
+                    console.log("Error deleting request: ", err);
                 });
-        };
+        }
+
+
     </script>
 </body>
 </html>
+

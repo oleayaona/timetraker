@@ -3,13 +3,14 @@
         <a href="/"><h1>Time Traker</h1></a>
         <p>A time log tracker</p>
     </div>
-    <ul class="nav-list">
-        <li><a href="/dashboard">Dashboard</a></li>
-        <li><a href="/requests">Requests</a></li>
-        <li><a href="/account">Account</a></li>
-        
+    <ul class="nav-list">        
         <% if (locals.userId) { %>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/dashboard/requests">Requests</a></li>
+            <li><a href="/dashboard/account">Account</a></li>
             <li><a href="/account/logout">Logout</a></li>
+        <% } else { %>
+            <li id="today"></li>
         <% } %>
     </ul>
 </nav>

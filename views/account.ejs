@@ -8,8 +8,8 @@
 
     <div class="content-container">
         <h2><a href="/dashboard">&#8592; Back to Dashboard</a></h2>
-        <ul>
-            <li><a id="emp-info-btn" href="#">View My Employee Info</a></li>
+        <ul class="no-list-style">
+            <a id="emp-info-btn" href="#"><li class="list-panel">View My Employee Info</li></a>
         </ul>
     
         <div class="employee-info"></div>
@@ -24,14 +24,15 @@
         btn.onclick = () => {
             container.innerHTML = "<p>Loading...</p>"
             event.preventDefault();
-            fetch('/get-account-info')
+            let userId = '<%-locals.userId %>'
+            fetch(`/get-account-info/${userId}`)
                 .then((response) => response.json())
                 .then(result => {
-                    console.log("Got results!", result);
                     container.innerHTML = `
                     <h3>${result.first_name} ${result.last_name}</h3>
-                    <p>${result.start_date} </p>
-                    <p>${result.emp_email} %></p>
+                    <p>Employee ID: ${result.employee_id} </p>
+                    <p>Start date: ${result.start_date.substring(0, 10)} </p>
+                    <p>Employee email: ${result.emp_email} %></p>
                     `;
                 }).catch((err) => {
                     console.log("Error fetching data: ", err);

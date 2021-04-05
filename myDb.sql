@@ -92,3 +92,29 @@ INSERT INTO request (
     'login',
     1
 ) RETURNING id;
+
+
+INSERT INTO employee (
+	id,
+	first_name,
+	last_name,
+	start_date,
+    dept_id,
+    emp_email
+)
+VALUES (
+	23456,
+	'Jane',
+	'Doe',
+	'2017-01-01',
+    1,
+    'janeDoe@workmail.com'
+);
+
+
+DELETE FROM public.user
+WHERE employee_id = '23456';
+
+UPDATE employee
+SET user_id = NULL
+WHERE id = '23456';

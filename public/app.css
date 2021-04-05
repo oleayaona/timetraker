@@ -11,6 +11,7 @@ h1, h2, h3, h4, h5, p {
 .content-container {
     background-color: #fafafa;
     padding: 20px 50px;
+    min-height: 440px;
 }
 input {
     border-radius: 5px;
@@ -21,6 +22,20 @@ input {
 }
 .flex {
     display: flex;
+}
+.message {
+    color: red;
+}
+.hidden {
+    display: none;
+}
+.no-list-style {
+    list-style: none;
+    padding: 20px;
+}
+#note {
+    color: red;
+    font-size: 0.8em;
 }
 /*---- HEADER NAV ----*/
 nav {
@@ -121,7 +136,23 @@ nav {
     cursor: pointer;
 }
 
-/*------- FOOTER --__--*/
+/*------- Requests -------*/
+.list-panel {
+    background-color: white;
+    border: 1px solid grey;
+    padding: 20px 20px;
+    color: black;
+    width: 100%;
+}
+.list-panel a {
+    margin-bottom: 20px;
+}
+.requests li {
+    padding: 10px;
+    border-bottom: 1px solid grey;
+}
+
+/*------- FOOTER ------*/
 footer {
     text-align: center;
     padding: 20px 0;

@@ -9,8 +9,14 @@
     <div class="content-container">
         <h2><a href="/dashboard">&#8592; Back to Dashboard</a></h2>
 
-        <form action="/submit-request" class="request-form" method="POST">
+        <form action="/submit-request" class="request-form" method="POST" name="requestForm">
             <h3 class="center-align">Attendance Validation Request</h3>
+            <% if (locals.message) { %>
+                <p class="message">
+                    <%- locals.message %>
+                </p>
+            <% } %>
+            <p class="message" style='font-size: 0.9em; text-align: center;'></p>
             <div class="date-input">
                 <p>Date</p>
                 <input type="date" name="date" id="date" placeholder="Date" required>
@@ -19,7 +25,7 @@
             <div class="time-input flex">
                 <input type="text" name="hour" id="hour" oninput="numberOnly('hour')" onblur="formatTime('hour')" placeholder="00" maxlength="2"  min="0" max="12"required>
                 <p>:</p>
-                <input type="text" name="min" id="min" oninput="numberOnly('min')" onblur="formatTime('min')" placeholder="00" maxlength="2"  min="0" max="59" equired>
+                <input type="text" name="min" id="min" oninput="numberOnly('min')" onblur="formatTime('min')" placeholder="00" maxlength="2"  min="0" max="59" required>
                 <input type="radio" id="AM" name="time" value="AM" required>
                 <label for="time">AM</label><br>
                 <input type="radio" id="PM" name="time" value="PM">
@@ -30,8 +36,10 @@
                 <option value="login">Log In</option>
                 <option value="logout">Log Out</option>
             </select>
+
+            <input type="hidden" name="userId" id="userId" value="">
             
-            <input type="submit" name="submit" id="submit-req-btn" value="SUBMIT REQUEST">
+            <input type="submit" name="submitbtn" id="submit-req-btn" value="SUBMIT REQUEST">
         </form>
         <!-- End of request form -->
     </div>
@@ -57,10 +65,33 @@
         }
 
 
-        // const form = document.querySelector(".request-form");
+        const form = document.querySelector(".request-form");
+        const message = document.querySelector(".message");
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            // Validate inputs
+            var hour = document.querySelector('#hour').value
+            var min = document.querySelector('#min').value
+            var date = document.querySelector('#date').value
+
+            console.log("Validating inputs...")
+            if (hour > 12 || min > 59) {
+                message.innerHTML = "<span>Invalid time. Please use the 12-hour format and try again.</span>";
+            } else if (hour === '' | min === '' | date === '' | date === null) {
+                message.innerHTML = "<span>Form incomplete. Please fill out all required fields.</span>";
+            } else {
+                var userId = '<%-locals.userId %>'
+                const userIdInput = document.querySelector('#userId');
+                userIdInput.value = userId;
+                form.submit();
+            }
+        });
+
+
+
         // const btn = document.querySelector("#submit-req-btn");
         // btn.onclick = () => {
-        //     /orm.innerHTML = "<p>Submitting request...</p>";
+        //     form.innerHTML = "<p>Submitting request...</p>";
         //     form.submit() = (response) => {
         //         try {
         //             response.json();
