@@ -6,6 +6,7 @@
     <%- include('./partials/nav.ejs') %>
 
     <div class="content-container">
+        <p><a href="/">&#8592; Back to home</a></p>
         <form action="/home/create-account/submit" class="login-form" method="POST">
             <% if (locals.message) { %>
                 <p class="message">
