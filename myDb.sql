@@ -103,18 +103,18 @@ INSERT INTO employee (
     emp_email
 )
 VALUES (
-	23456,
-	'Jane',
+	54321,
+	'Alex',
 	'Doe',
-	'2017-01-01',
+	'2019-05-05',
     1,
-    'janeDoe@workmail.com'
+    'alexDoe@workmail.com'
 );
 
 
 DELETE FROM public.user
-WHERE employee_id = '23456';
+WHERE employee_id = '56789';
 
 UPDATE employee
 SET user_id = NULL
-WHERE id = '23456';
+WHERE id = '56789';

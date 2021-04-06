@@ -125,7 +125,7 @@ function verifyEmployee(req, res) {
     var emp_email = sanitizer.value(req.body.emp_email, 'email');
     var id = sanitizer.value(req.body.id, 'int');
 
-    console.log(emp_email)
+    // console.log(emp_email)
     // If validation fails
     if (emp_email == null || isNaN(id) == true) {
         console.log("Invalid input");
@@ -142,7 +142,7 @@ function verifyEmployee(req, res) {
                 res.json({success: false, error: err});
             } else {
                 console.log("Email and ID verified!");
-                console.log(result);
+                // console.log(result);
                 res.json({success: true, data: result});
             }
         });
@@ -158,8 +158,6 @@ function createAccount(req, res) {
     var emp_email = sanitizer.value(req.body.emp_email, 'email');
     var id = sanitizer.value(req.body.id, 'int');
     var first_name = sanitizer.value(req.body.first_name, 'str');
-
-    console.log(password + " " + emp_email + " " + id);
 
     // Check if any of the inputs are invalid
     if (password == null) {
@@ -191,7 +189,7 @@ function createAccount(req, res) {
                     } else {
                         console.log("Successfully created account!");
                         console.log("Now adding user_id to employee...");
-                        console.log(result);
+                        // console.log(result);
                         // update employee info with user_id
                         addUserId(result, id, (err, updateResult) => {
                             if (err || updateResult.length == 0 || updateResult == null) {
@@ -204,7 +202,6 @@ function createAccount(req, res) {
                                 // Allow user to login by saving id to session
                                 req.session.userId = result[0].id;
                                 req.session.userName = first_name;
-                                console.log(req.session.userId + " " + req.session.userName)
                                 res.render('dashboard', {title: "Dashboard", userId: req.session.userId, userName: req.session.userName});
                             }
                         })
@@ -234,7 +231,7 @@ function addUserId(result, emp_id, callback) {
             callback(err, null);
         } else {
             console.log("Successfully added user_id");
-            console.log(res)
+            // console.log(res)
             callback(null, res);
         }
     })

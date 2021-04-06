@@ -15,8 +15,8 @@ function queryDB(sql, callback) {
             callback(err, null);
         } else {
             console.log("Got results from db!");
-            console.log("Query result:");
-            console.log(JSON.stringify(res.rows));
+            //console.log("Query result:");
+            //console.log(JSON.stringify(res.rows));
             callback(null, res.rows);
         }
     });

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
     <%- include('./partials/head.ejs') %>
 
@@ -19,20 +20,21 @@
             <p class="message" style='font-size: 0.9em; text-align: center;'></p>
             <div class="date-input">
                 <p>Date</p>
-                <input type="date" name="date" id="date" placeholder="Date" required>
+                <input type="date" name="date" id="date" required>
             </div>
             <p>Time</p>
             <div class="time-input flex">
-                <input type="text" name="hour" id="hour" oninput="numberOnly('hour')" onblur="formatTime('hour')" placeholder="00" maxlength="2"  min="0" max="12"required>
+                <input type="text" name="hour" id="hour" oninput="numberOnly('hour')" onblur="formatTime('hour')" placeholder="00" maxlength="2" required>
                 <p>:</p>
-                <input type="text" name="min" id="min" oninput="numberOnly('min')" onblur="formatTime('min')" placeholder="00" maxlength="2"  min="0" max="59" required>
+                <input type="text" name="min" id="min" oninput="numberOnly('min')" onblur="formatTime('min')" placeholder="00" maxlength="2" required>
                 <input type="radio" id="AM" name="time" value="AM" required>
-                <label for="time">AM</label><br>
+                <label for="AM">AM</label><br>
                 <input type="radio" id="PM" name="time" value="PM">
-                <label for="time">PM</label><br>
+                <label for="PM">PM</label><br>
             </div>
             <p>Request Type</p>
             <select name="type" id="type" required>
+                <option value="" disabled selected>Type of request</option>
                 <option value="login">Log In</option>
                 <option value="logout">Log Out</option>
             </select>
@@ -88,36 +90,6 @@
         });
 
 
-
-        // const btn = document.querySelector("#submit-req-btn");
-        // btn.onclick = () => {
-        //     form.innerHTML = "<p>Submitting request...</p>";
-        //     form.submit() = (response) => {
-        //         try {
-        //             response.json();
-        //             if (result.id) {
-        //                 console.log("Request with ID # " + result.id + "submitted!");
-        //                 form.innerHTML = `<h3>Request submitted.</h3>`;
-        //             }
-        //         } catch (err) {
-        //             console.log("Error: ", err)
-        //         }
-                
-        //     }
-            
-            // fetch('/submit-request')
-            //     .then((response) => response.json())
-            //     .then(result => {
-            //         if (result.id) {
-            //             console.log("Request with ID # " + result.id + "submitted!");
-            //             form.innerHTML = `
-            //             <h3>Request submitted.</h3>
-            //             `;
-            //             }
-            //     }).catch((err) => {
-            //         console.log("Error fetching data: ", err);
-            //     });
-        // };
     </script>
 </body>
 </html>
